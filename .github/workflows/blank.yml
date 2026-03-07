@@ -1,0 +1,31 @@
+
+name: Artificial Scrum Master
+
+on:
+  schedule:
+    # Run daily at 9:00 UTC
+    - cron: '0 9 * * *'
+  workflow_dispatch:   # Allows manual triggering from the Actions tab
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install PyGithub
+
+      - name: Run Artificial Scrum Master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          INPUT_DAYS_STALE: 2          # adjust as needed
+          INPUT_ROADBLOCKS: "data access,rate limit,api latency,hallucination"
+        run: python artificial_scrum_master.py
