@@ -68,12 +68,14 @@ python scrum_master.py
 
 ⚙️ Configuration
 The bot is highly customizable via environment variables:
+
 | Variable | Description | Required | Default |
-|---|---|---|---|
-| GITHUB_TOKEN | GitHub token with repo access. | ✅ | - |
-| GITHUB_REPOSITORY | Repository name in owner/repo format. | ✅ | - |
-| INPUT_DAYS_STALE | Days after which an issue is marked stale. | ❌ | 2 |
-| INPUT_ROADBLOCKS | Comma-separated GenAI roadblock keywords. | ❌ | data access,rate limit,api latency,hallucination |
+| :--- | :--- | :---: | :--- |
+| `GITHUB_TOKEN` | GitHub token with repo access | ✅ | – |
+| `GITHUB_REPOSITORY` | Repository name in `owner/repo` format | ✅ | – |
+| `INPUT_DAYS_STALE` | Number of days after which an issue is considered stale | ❌ | `2` |
+| `INPUT_ROADBLOCKS` | Comma-separated keywords that signal a GenAI roadblock | ❌ | `data access,rate limit,api latency,hallucination` |
+
 📅 Example Workflow
 Create .github/workflows/scrum-master-daily.yml to automate your daily standup checks:
 name: Scrum Master Daily Scan
