@@ -65,6 +65,7 @@ export GITHUB_REPOSITORY=owner/repo
 export INPUT_DAYS_STALE=2
 export INPUT_ROADBLOCKS="data access,rate limit,api latency,hallucination"
 python scrum_master.py
+```
 
 ⚙️ Configuration
 The bot is highly customizable via environment variables:
@@ -76,6 +77,7 @@ The bot is highly customizable via environment variables:
 | `INPUT_DAYS_STALE` | Number of days after which an issue is considered stale | ❌ | `2` |
 | `INPUT_ROADBLOCKS` | Comma-separated keywords that signal a GenAI roadblock | ❌ | `data access,rate limit,api latency,hallucination` |
 
+```
 📅 Example Workflow
 Create .github/workflows/scrum-master-daily.yml to automate your daily standup checks:
 name: Scrum Master Daily Scan
@@ -107,7 +109,7 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           INPUT_DAYS_STALE: 2
           INPUT_ROADBLOCKS: 'data access,rate limit,api latency,hallucination'
-
+```
 🤝 Contributing
 Contributions are welcome! Please follow these steps:
  * Fork the Project.
@@ -115,6 +117,7 @@ Contributions are welcome! Please follow these steps:
  * Commit your Changes (git commit -m 'Add some AmazingFeature').
  * Push to the Branch (git push origin feature/AmazingFeature).
  * Open a Pull Request.
+
 📄 License
 Distributed under the MIT License. See LICENSE for more information.
 Built for agile teams that embrace AI-assisted development.
