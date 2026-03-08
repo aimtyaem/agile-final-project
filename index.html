@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenAI Transformation | Predictive Agile Board</title>
+    <!-- Tailwind CSS for rapid, scalable UI development -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons for sleek, modern iconography -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        space: {
+                            900: '#0B1021',
+                            800: '#151C33',
+                            700: '#232D4F',
+                            accent: '#3B82F6'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for horizontal board scrolling */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0B1021; }
+        ::-webkit-scrollbar-thumb { background: #232D4F; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
+        
+        /* Drag and Drop visual feedback */
+        .board-column { transition: background-color 0.2s ease; }
+        .drag-over { background-color: rgba(59, 130, 246, 0.1); border: 2px dashed #3B82F6; }
+        .is-dragging { opacity: 0.5; transform: scale(0.98); }
+        
+        /* Toast animation */
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast-enter { animation: slideIn 0.3s ease-out forwards; }
+    </style>
+</head>
+<body class="bg-space-900 text-slate-200 font-sans min-h-screen flex flex-col overflow-hidden">
+
+    <!-- Top Navigation & KPI Dashboard -->
+    <header class="bg-space-800 border-b border-space-700 p-4 shrink-0 shadow-lg">
+        <div class="max-w-screen-2xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <i data-lucide="rocket" class="text-blue-500 w-8 h-8"></i>
+                <div>
+                    <h1 class="text-xl font-bold text-white tracking-wide">GenAI Engine</h1>
+                    <p class="text-xs text-slate-400">Predictive Agile & Agentic Oversight</p>
+                </div>
+            </div>
+            
+            <!-- Strategic Metrics -->
+            <div class="flex gap-6 bg-space-900 px-6 py-2 rounded-lg border border-space-700 hidden md:flex">
+                <div class="text-center">
+                    <p class="text-[10px] text-slate-400 uppercase tracking-wider">Velocity</p>
+                    <p class="font-mono text-green-400 font-bold">8.4 Days</p>
+                </div>
+                <div class="w-px bg-space-700"></div>
+                <div class="text-center">
+                    <p class="text-[10px] text-slate-400 uppercase tracking-wider">HITL Trust Score</p>
+                    <p class="font-mono text-blue-400 font-bold">98.2%</p>
+                </div>
+                <div class="w-px bg-space-700"></div>
+                <div class="text-center">
+                    <p class="text-[10px] text-slate-400 uppercase tracking-wider">Burn Rate / Pt</p>
+                    <p class="font-mono text-purple-400 font-bold">$14.50</p>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="triggerScrumMaster()" class="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors shadow-[0_0_15px_rgba(147,51,234,0.3)]">
+                    <i data-lucide="bot" class="w-4 h-4"></i>
+                    Run AI Scrum Master
+                </button>
+                <button onclick="openModal()" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    New Story
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Kanban Board Container -->
+    <main class="flex-1 overflow-x-auto p-6">
+        <div class="flex gap-6 h-full min-w-max pb-4" id="board-container">
+            <!-- Columns injected by JS -->
+        </div>
+    </main>
+
+    <!-- Modal: New GenAI User Story -->
+    <div id="story-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 opacity-0 transition-opacity duration-300">
+        <div class="bg-space-800 border border-space-700 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300" id="modal-content">
+            <div class="p-6 border-b border-space-700 flex justify-between items-center sticky top-0 bg-space-800 z-10">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i data-lucide="file-text" class="text-blue-500"></i> Create GenAI User Story
+                </h2>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white transition-colors">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="new-story-form" class="p-6 space-y-6" onsubmit="handleFormSubmit(event)">
+                
+                <!-- 1. Problem Statement -->
+                <div>
+                    <h3 class="text-sm font-bold text-slate-300 mb-3 uppercase tracking-wider border-b border-space-700 pb-1">1. Problem Statement</h3>
+                    <div class="space-y-3">
+                        <input type="text" id="title" required placeholder="Use Case Title (e.g., RAG for Telemetry)" class="w-full bg-space-900 border border-space-700 rounded p-3 text-white focus:outline-none focus:border-blue-500">
+                        <div class="flex gap-3">
+                            <input type="text" required placeholder="As a [Role]..." class="flex-1 bg-space-900 border border-space-700 rounded p-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                            <input type="text" required placeholder="I need [Function]..." class="flex-1 bg-space-900 border border-space-700 rounded p-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Strategic Alignment -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Priority Matrix</label>
+                        <select id="priority" class="w-full bg-space-900 border border-space-700 rounded p-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                            <option value="Golden Use Case">Golden Use Case (High Value/High Feasibility)</option>
+                            <option value="Strategic Bet">Strategic Bet (High Value/Low Feasibility)</option>
+                            <option value="Quick Win">Quick Win (Low Value/High Speed)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Hallucination Risk</label>
+                        <select id="risk" class="w-full bg-space-900 border border-space-700 rounded p-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                            <option value="Low">Low (Deterministic formatting)</option>
+                            <option value="Medium">Medium (Internal knowledge retrieval)</option>
+                            <option value="High">High (Open-ended generation)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 3. AI Risk Assessment (Checkboxes) -->
+                <div>
+                    <h3 class="text-sm font-bold text-slate-300 mb-3 uppercase tracking-wider border-b border-space-700 pb-1">2. AI Risk & Governance</h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center gap-3 text-sm cursor-pointer">
+                            <input type="checkbox" required class="form-checkbox text-blue-500 bg-space-900 border-space-700 rounded focus:ring-0 w-4 h-4">
+                            <span>Outputs can be explained/traced to source data.</span>
+                        </label>
+                        <label class="flex items-center gap-3 text-sm cursor-pointer">
+                            <input type="checkbox" required class="form-checkbox text-blue-500 bg-space-900 border-space-700 rounded focus:ring-0 w-4 h-4">
+                            <span>Adversarial prompt testing completed.</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-space-700 flex justify-end gap-3">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 text-sm text-slate-300 hover:text-white transition-colors">Cancel</button>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded shadow-lg transition-colors">Inject into Backlog</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-6 right-6 flex flex-col gap-3 z-50"></div>
+
+    <script>
+        // --- State Management ---
+        const COLUMNS = [
+            { id: 'backlog', title: 'Product Backlog', icon: 'list', color: 'text-slate-400' },
+            { id: 'sprint', title: 'Sprint Backlog', icon: 'zap', color: 'text-blue-400' },
+            { id: 'progress', title: 'In Progress', icon: 'loader', color: 'text-yellow-400' },
+            { id: 'review', title: 'Review / HITL', icon: 'shield-check', color: 'text-purple-400' },
+            { id: 'done', title: 'Production / Scaled', icon: 'check-circle', color: 'text-green-400' }
+        ];
+
+        let state = {
+            tasks: [
+                { id: 't1', title: 'RAG Pipeline for Orbital Telemetry', status: 'progress', priority: 'Golden Use Case', risk: 'Medium', daysStale: 3 },
+                { id: 't2', title: 'LLM-based Maintenance Scheduler', status: 'backlog', priority: 'Strategic Bet', risk: 'High', daysStale: 0 },
+                { id: 't3', title: 'Automated GDPR Compliance Audit', status: 'review', priority: 'Quick Win', risk: 'Low', daysStale: 1 },
+                { id: 't4', title: 'Trajectory Optimization Agent', status: 'sprint', priority: 'Golden Use Case', risk: 'High', daysStale: 0 }
+            ]
+        };
+
+        // --- Core Rendering Logic ---
+        function renderBoard() {
+            const container = document.getElementById('board-container');
+            container.innerHTML = '';
+
+            COLUMNS.forEach(col => {
+                const columnTasks = state.tasks.filter(t => t.status === col.id);
+                
+                const colHTML = `
+                    <div class="flex flex-col w-80 shrink-0 bg-space-800/50 rounded-xl border border-space-700 overflow-hidden h-full">
+                        <div class="p-4 border-b border-space-700 bg-space-800 flex justify-between items-center cursor-default">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="${col.icon}" class="${col.color} w-5 h-5"></i>
+                                <h2 class="font-bold text-slate-200 tracking-wide text-sm">${col.title}</h2>
+                            </div>
+                            <span class="bg-space-900 text-xs font-mono px-2 py-1 rounded text-slate-400 border border-space-700">${columnTasks.length}</span>
+                        </div>
+                        <div class="p-3 flex-1 overflow-y-auto space-y-3 board-column" 
+                             id="${col.id}"
+                             ondragover="handleDragOver(event)"
+                             ondragleave="handleDragLeave(event)"
+                             ondrop="handleDrop(event, '${col.id}')">
+                            ${columnTasks.map(createCardHTML).join('')}
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', colHTML);
+            });
+            lucide.createIcons();
+        }
+
+        function createCardHTML(task) {
+            const riskColors = {
+                'Low': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+                'Medium': 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+                'High': 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+            };
+            const riskClass = riskColors[task.risk] || riskColors['Low'];
+            
+            // Highlight stale tasks in progress
+            const isStale = task.status === 'progress' && task.daysStale > 2;
+            const borderClass = isStale ? 'border-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.2)]' : 'border-space-600 hover:border-blue-500';
+
+            return `
+                <div class="bg-space-900 p-4 rounded-lg border ${borderClass} cursor-grab active:cursor-grabbing relative group transition-all"
+                     draggable="true"
+                     ondragstart="handleDragStart(event, '${task.id}')"
+                     ondragend="handleDragEnd(event)"
+                     id="${task.id}">
+                    
+                    ${isStale ? `<div class="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse shadow-lg flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3 h-3"></i> STALLED</div>` : ''}
+
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">${task.priority}</span>
+                        <i data-lucide="more-horizontal" class="w-4 h-4 text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                    </div>
+                    
+                    <h3 class="text-sm font-semibold text-white mb-4 leading-snug">${task.title}</h3>
+                    
+                    <div class="flex justify-between items-center mt-auto">
+                        <span class="text-[10px] font-mono px-2 py-1 rounded border ${riskClass} flex items-center gap-1">
+                            <i data-lucide="activity" class="w-3 h-3"></i> Risk: ${task.risk}
+                        </span>
+                        ${task.daysStale > 0 ? `<span class="text-[10px] text-slate-500"><i data-lucide="clock" class="inline w-3 h-3 mr-1"></i>${task.daysStale}d</span>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- Drag and Drop Logic ---
+        function handleDragStart(e, taskId) {
+            e.dataTransfer.setData('text/plain', taskId);
+            setTimeout(() => { document.getElementById(taskId).classList.add('is-dragging'); }, 0);
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('is-dragging');
+            document.querySelectorAll('.board-column').forEach(col => col.classList.remove('drag-over'));
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault(); // Necessary to allow dropping
+            const column = e.target.closest('.board-column');
+            if (column) column.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            const column = e.target.closest('.board-column');
+            if (column) column.classList.remove('drag-over');
+        }
+
+        function handleDrop(e, targetStatus) {
+            e.preventDefault();
+            const taskId = e.dataTransfer.getData('text/plain');
+            const column = document.getElementById(targetStatus);
+            column.classList.remove('drag-over');
+
+            const taskIndex = state.tasks.findIndex(t => t.id === taskId);
+            if (taskIndex > -1) {
+                // If moving into progress, reset stale counter. If moving to done, record metrics.
+                if (targetStatus === 'progress' && state.tasks[taskIndex].status !== 'progress') {
+                    state.tasks[taskIndex].daysStale = 0;
+                }
+                if (targetStatus === 'done') {
+                    showToast('Task scaled to production. Velocity metrics updated.', 'success');
+                }
+
+                state.tasks[taskIndex].status = targetStatus;
+                renderBoard();
+            }
+        }
+
+        // --- AI Scrum Master Logic (Agentic Simulation) ---
+        function triggerScrumMaster() {
+            showToast('AI Agent scanning board for technical debt & bottlenecks...', 'info');
+            
+            setTimeout(() => {
+                const inProgressTasks = state.tasks.filter(t => t.status === 'progress');
+                const staleTask = inProgressTasks.find(t => t.daysStale > 2);
+
+                if (staleTask) {
+                    showToast(`🚨 Roadmap Alert: "${staleTask.title}" has been stalled for ${staleTask.daysStale} days. Potential Data API Latency detected. @ChiefAIOfficer notified.`, 'error');
+                    // Visually shake the card
+                    const el = document.getElementById(staleTask.id);
+                    if(el) {
+                        el.style.transform = 'translateX(-10px)';
+                        setTimeout(() => el.style.transform = 'translateX(10px)', 100);
+                        setTimeout(() => el.style.transform = 'translateX(0)', 200);
+                    }
+                } else {
+                    showToast('✅ Board optimization complete. Burndown rate is healthy. No GenAI roadblocks detected.', 'success');
+                }
+            }, 1500);
+        }
+
+        // --- Modal & Form Logic ---
+        function openModal() {
+            const modal = document.getElementById('story-modal');
+            const content = document.getElementById('modal-content');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            // Small delay for animation
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            });
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('story-modal');
+            const content = document.getElementById('modal-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.getElementById('new-story-form').reset();
+            }, 300);
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const title = document.getElementById('title').value;
+            const priority = document.getElementById('priority').value;
+            const risk = document.getElementById('risk').value;
+
+            const newTask = {
+                id: 't' + Date.now(),
+                title: title,
+                status: 'backlog',
+                priority: priority,
+                risk: risk,
+                daysStale: 0
+            };
+
+            state.tasks.push(newTask);
+            renderBoard();
+            closeModal();
+            showToast('Golden Use Case injected into Product Backlog.', 'success');
+        }
+
+        // --- Toast Notification System ---
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            
+            const icons = {
+                'info': '<i data-lucide="info" class="text-blue-400"></i>',
+                'success': '<i data-lucide="check-circle" class="text-green-400"></i>',
+                'error': '<i data-lucide="alert-octagon" class="text-rose-400"></i>'
+            };
+            
+            const borders = {
+                'info': 'border-blue-500/50',
+                'success': 'border-green-500/50',
+                'error': 'border-rose-500/50'
+            };
+
+            const toastId = 'toast-' + Date.now();
+            const toastHTML = `
+                <div id="${toastId}" class="toast-enter bg-space-800 border ${borders[type]} text-slate-200 p-4 rounded-lg shadow-2xl flex items-start gap-3 max-w-sm">
+                    <div class="shrink-0 mt-0.5">${icons[type]}</div>
+                    <p class="text-sm leading-relaxed">${message}</p>
+                    <button onclick="document.getElementById('${toastId}').remove()" class="shrink-0 text-slate-500 hover:text-white transition-colors ml-auto -mt-1 -mr-1 p-1">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', toastHTML);
+            lucide.createIcons();
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                const toast = document.getElementById(toastId);
+                if (toast) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(100%)';
+                    toast.style.transition = 'all 0.3s ease-in';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 5000);
+        }
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', renderBoard);
+    </script>
+</body>
+</html>
+
