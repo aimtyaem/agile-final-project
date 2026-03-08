@@ -112,11 +112,13 @@ jobs:
 ```
 ---
 ## ​🧩 Core Repository Components
-​The Predictive Kanban Dashboard (index.html)
+* ​The Predictive Kanban Dashboard (index.html)
 A zero-dependency, standalone interactive visual interface that maps GenAI use cases across a strict maturation lifecycle. It enforces a mandatory "Human-in-the-Loop (HITL)" review phase to monitor factual consistency and prevent model drift before scaling to production.
-​The Agentic Scrum Master (ai_scrum_master.py)
+​
+* The Agentic Scrum Master (ai_scrum_master.py)
 An automated Python agent designed to run in your GitHub Actions pipeline. It continuously scans board activity, programmatically detecting stalled velocity and keyword-based technical debt (e.g., "API Latency", "Rate Limits"). It alerts the Chief AI Officer before a sprint fails.
-​Governance Templates (.github/ISSUE_TEMPLATE/)
+
+* ​Governance Templates (.github/ISSUE_TEMPLATE/)
 Standardized markdown templates that mandate AI Risk Assessments (Explainability, Data Privacy, Bias Audits) at the inception of every user story, turning compliance from an afterthought into a prerequisite.
 ---
 ## 🤝 Contributing
