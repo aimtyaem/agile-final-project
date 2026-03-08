@@ -110,14 +110,24 @@ jobs:
           INPUT_DAYS_STALE: 2
           INPUT_ROADBLOCKS: 'data access,rate limit,api latency,hallucination'
 ```
-🤝 Contributing
+---
+## ​🧩 Core Repository Components
+​The Predictive Kanban Dashboard (index.html)
+A zero-dependency, standalone interactive visual interface that maps GenAI use cases across a strict maturation lifecycle. It enforces a mandatory "Human-in-the-Loop (HITL)" review phase to monitor factual consistency and prevent model drift before scaling to production.
+​The Agentic Scrum Master (ai_scrum_master.py)
+An automated Python agent designed to run in your GitHub Actions pipeline. It continuously scans board activity, programmatically detecting stalled velocity and keyword-based technical debt (e.g., "API Latency", "Rate Limits"). It alerts the Chief AI Officer before a sprint fails.
+​Governance Templates (.github/ISSUE_TEMPLATE/)
+Standardized markdown templates that mandate AI Risk Assessments (Explainability, Data Privacy, Bias Audits) at the inception of every user story, turning compliance from an afterthought into a prerequisite.
+---
+## 🤝 Contributing
 Contributions are welcome! Please follow these steps:
  * Fork the Project.
  * Create your Feature Branch (git checkout -b feature/AmazingFeature).
  * Commit your Changes (git commit -m 'Add some AmazingFeature').
  * Push to the Branch (git push origin feature/AmazingFeature).
  * Open a Pull Request.
-
+---
 📄 License
 Distributed under the MIT License. See LICENSE for more information.
 Built for agile teams that embrace AI-assisted development.
+---
