@@ -168,6 +168,98 @@
     <div id="toast-container" class="fixed bottom-6 right-6 flex flex-col gap-3 z-50"></div>
 
     <script>
+/**
+ * @fileoverview Octokit Integration Strategy for GenAI Kanban
+ * This module demonstrates how to replace the in-memory state with live GitHub Issues.
+ * * PREREQUISITE: Add this to your HTML <head>:
+ * <script type="module">
+ * import { Octokit } from "https://esm.sh/@octokit/rest";
+ * window.Octokit = Octokit;
+ * </script>
+ */
+
+class GenAIGitHubClient {
+    constructor(personalAccessToken, repoOwner, repoName) {
+        // In a production MVP, users authenticate via OAuth. 
+        // For local deployment, a Personal Access Token (PAT) is used.
+        this.octokit = new window.Octokit({ auth: personalAccessToken });
+        this.owner = repoOwner;
+        this.repo = repoName;
+    }
+
+    /**
+     * Fetches all open issues labeled as "Golden Use Case" and maps them to board state.
+     */
+    async fetchActiveSprints() {
+        try {
+            const { data: issues } = await this.octokit.rest.issues.listForRepo({
+                owner: this.owner,
+                repo: this.repo,
+                state: 'open',
+                labels: 'Golden Use Case' // Filter for GenAI Transformation tasks
+            });
+
+            // Map GitHub Issues to the Kanban UI schema
+            return issues.map(issue => ({
+                id: issue.number.toString(),
+                title: issue.title,
+                // Map GitHub labels to our internal board statuses (e.g., "status: in-progress")
+                status: this._extractStatusFromLabels(issue.labels) || 'backlog',
+                priority: 'Golden Use Case', 
+                risk: this._extractRiskFromLabels(issue.labels) || 'Medium',
+                daysStale: this._calculateStaleness(issue.updated_at)
+            }));
+        } catch (error) {
+            console.error("Data Sync Failure: Check API limits or Token Scopes", error);
+            return [];
+        }
+    }
+
+    /**
+     * Updates an issue's status label when a card is dropped into a new column.
+     */
+    async updateIssueStatus(issueNumber, newStatus) {
+        // 1. Fetch current labels
+        const { data: issue } = await this.octokit.rest.issues.get({
+            owner: this.owner,
+            repo: this.repo,
+            issue_number: parseInt(issueNumber)
+        });
+
+        // 2. Filter out old status labels, append the new one
+        const updatedLabels = issue.labels
+            .filter(label => !label.name.startsWith('status:'))
+            .map(label => label.name);
+        updatedLabels.push(`status:${newStatus}`);
+
+        // 3. Push to GitHub
+        await this.octokit.rest.issues.update({
+            owner: this.owner,
+            repo: this.repo,
+            issue_number: parseInt(issueNumber),
+            labels: updatedLabels
+        });
+    }
+
+    // --- Helper Methods ---
+    _extractStatusFromLabels(labels) {
+        const statusLabel = labels.find(l => l.name.startsWith('status:'));
+        return statusLabel ? statusLabel.name.split(':')[1] : null;
+    }
+
+    _extractRiskFromLabels(labels) {
+        const riskLabel = labels.find(l => l.name.startsWith('risk:'));
+        return riskLabel ? riskLabel.name.split(':')[1] : null;
+    }
+
+    _calculateStaleness(updatedAtString) {
+        const updatedDate = new Date(updatedAtString);
+        const diffTime = Math.abs(new Date() - updatedDate);
+        return Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
+    }
+}
+
+
         // --- State Management ---
         const COLUMNS = [
             { id: 'backlog', title: 'Product Backlog', icon: 'list', color: 'text-slate-400' },
