@@ -115,13 +115,14 @@
                     <div class="space-y-3">
                         <input type="text" id="title" required placeholder="Use Case Title (e.g., RAG for Telemetry)" class="w-full bg-space-900 border border-space-700 rounded p-3 text-white focus:outline-none focus:border-blue-500">
                         <div class="flex gap-3">
-                            <input type="text" required placeholder="As a [Role]..." class="flex-1 bg-space-900 border border-space-700 rounded p-2 text-sm text-white focus:outline-none focus:border-blue-500">
-                            <input type="text" required placeholder="I need [Function]..." class="flex-1 bg-space-900 border border-space-700 rounded p-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                            <!-- Removed 'required' from these optional detailed fields to allow form submission -->
+                            <input type="text" placeholder="As a [Role]... (optional)" class="flex-1 bg-space-900 border border-space-700 rounded p-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                            <input type="text" placeholder="I need [Function]... (optional)" class="flex-1 bg-space-900 border border-space-700 rounded p-2 text-sm text-white focus:outline-none focus:border-blue-500">
                         </div>
                     </div>
                 </div>
 
-                <!-- 2. Strategic Alignment -->
+                <!-- 2. Strategic Alignment (corrected heading number) -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-400 mb-1">Priority Matrix</label>
@@ -141,9 +142,9 @@
                     </div>
                 </div>
 
-                <!-- 3. AI Risk Assessment (Checkboxes) -->
+                <!-- 3. AI Risk Assessment (corrected heading number) -->
                 <div>
-                    <h3 class="text-sm font-bold text-slate-300 mb-3 uppercase tracking-wider border-b border-space-700 pb-1">2. AI Risk & Governance</h3>
+                    <h3 class="text-sm font-bold text-slate-300 mb-3 uppercase tracking-wider border-b border-space-700 pb-1">3. AI Risk & Governance</h3>
                     <div class="space-y-2">
                         <label class="flex items-center gap-3 text-sm cursor-pointer">
                             <input type="checkbox" required class="form-checkbox text-blue-500 bg-space-900 border-space-700 rounded focus:ring-0 w-4 h-4">
@@ -506,4 +507,3 @@ class GenAIGitHubClient {
     </script>
 </body>
 </html>
-
